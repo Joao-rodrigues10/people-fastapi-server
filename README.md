@@ -1,21 +1,39 @@
+---
+
+```markdown
+# 📘 FastAPI + MongoDB (Arquitetura Hexagonal)
+
+Este projeto é uma API simples desenvolvida com [FastAPI](https://fastapi.tiangolo.com/) utilizando **MongoDB como banco de dados** e arquitetura **hexagonal (ports & adapters)**.  
+A API permite criar, buscar e futuramente atualizar/deletar pessoas. Ideal para fins educacionais e testes locais.
 
 ---
-```markdown
-# 📘 FastAPI - Explicando
 
-Este projeto é uma API simples desenvolvida com [FastAPI](https://fastapi.tiangolo.com/) para fins educacionais. A API permite criar e consultar pessoas, persistindo os dados localmente em um arquivo JSON.
+## 🧱 Arquitetura
+
+O projeto segue a **arquitetura hexagonal (ou Clean Architecture)**:
+
+```
+
+\[Router] ─▶ \[UseCase] ─▶ \[Domain Service] ─▶ \[Repository]
+
+````
+
+- `app/router`: entrada HTTP com FastAPI  
+- `app/usecase`: lógica de orquestração  
+- `domain/service`: regras de negócio  
+- `infra/repository`: acesso ao MongoDB (camada adaptadora)  
+
+---
 
 ## 🚀 Funcionalidades
 
-- 📄 Adicionar uma nova pessoa
-- 🔍 Buscar uma pessoa por ID
+- ✅ Criar uma nova pessoa (`create`) – **implementado**
+- ✅ Buscar uma pessoa por ID (`get`) – **implementado**
+- ⏳ Atualizar uma pessoa (`update`) – **a implementar**
+- ⏳ Deletar uma pessoa (`delete`) – **a implementar**
+- ⏳ Listar todas as pessoas (`list`) – **a implementar**
 
-## PRECISA IMPLEMENTAR
-- 🗑️ Deletar uma pessoa
-- ✏️ Atualizar os dados de uma pessoa
-- 📜 Listar todas as pessoas
-
-````
+---
 
 ## 📦 Requisitos
 
@@ -23,46 +41,77 @@ Este projeto é uma API simples desenvolvida com [FastAPI](https://fastapi.tiang
 - FastAPI
 - Uvicorn
 - Pydantic
+- [pymongo](https://pymongo.readthedocs.io/en/stable/) (driver MongoDB)
+- MongoDB local via Docker
 
-Você pode instalar as dependências com:
+Instale as dependências com:
 
 ```bash
 pip install -r requirements.txt
 ````
 
-## ▶️ Como Executar
+---
 
-Execute o servidor com:
+## 🐳 Banco de Dados
+
+Rodamos o MongoDB localmente usando **Docker Compose**.
+Exemplo de `docker-compose.yml` incluído no projeto:
+
+```yaml
+version: '3.8'
+
+services:
+  mongodb:
+    image: mongo:6.0
+    container_name: mongodb
+    ports:
+      - "27017:27017"
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: example
+    volumes:
+      - mongodb_data:/data/db
+
+volumes:
+  mongodb_data:
+```
+
+Start com:
 
 ```bash
-python main.py
+docker-compose up -d
 ```
 
-A API estará acessível em: [http://localhost:80](http://localhost:80)
+Conexão esperada:
+
+```
+mongodb://root:example@localhost:27017
+```
+
+Banco padrão: `people_db`
+Coleção: `people`
+
+---
+
+## ▶️ Como Executar
+
+Rode o app com:
+
+```bash
+uvicorn src.main:app --host 0.0.0.0 --port 8000 --reload
+```
+
+Acesse: [http://localhost:8000/docs](http://localhost:8000/docs)
+
+---
 
 ## 📬 Endpoints
-
-### `GET /people/{user_id}`
-
-Busca uma pessoa pelo ID.
-
-**Exemplo de resposta:**
-
-```json
-{
-  "id": "c1a37b59-f1f3-4f25-84b9-b08a6ce0bb63",
-  "name": "João",
-  "last_name": "Silva",
-  "age": 30,
-  "birthdate": "1993-05-14"
-}
-```
 
 ### `POST /people`
 
 Adiciona uma nova pessoa.
 
-**Exemplo de requisição:**
+**Requisição:**
 
 ```json
 {
@@ -73,7 +122,7 @@ Adiciona uma nova pessoa.
 }
 ```
 
-**Exemplo de resposta:**
+**Resposta:**
 
 ```json
 {
@@ -85,11 +134,46 @@ Adiciona uma nova pessoa.
 }
 ```
 
-## 🧠 Sobre o Projeto
+---
 
-Esse projeto simula um CRUD básico com armazenamento em arquivo local (`database.json`). Ideal para ensinar conceitos como:
+### `GET /people/{user_id}`
 
-* Organização em camadas (router, schema, main)
-* Pydantic para validação de dados
-* Uso de UUID para criação de identificadores únicos
-* Criação de rotas com FastAPI
+Busca uma pessoa pelo ID.
+
+**Resposta:**
+
+```json
+{
+  "id": "c1a37b59-f1f3-4f25-84b9-b08a6ce0bb63",
+  "name": "João",
+  "last_name": "Silva",
+  "age": 30,
+  "birthdate": "1993-05-14"
+}
+```
+
+---
+
+## ✅ Progresso de Implementação
+
+| Método     | Status         | Integração Mongo | Local |
+| ---------- | -------------- | ---------------- | ----- |
+| `create`   | ✅ Implementado | ✅                | ❌     |
+| `get`      | ✅ Implementado | ✅                | ❌     |
+| `update`   | ⏳ Em breve     | ❌                | ❌     |
+| `delete`   | ⏳ Em breve     | ❌                | ❌     |
+| `list_all` | ⏳ Em breve     | ❌                | ❌     |
+
+---
+
+## 💡 Aprendizados
+
+Esse projeto ensina:
+
+* 📐 Arquitetura hexagonal real com separação de camadas
+* 📂 Organização escalável (routers, usecases, domain, infra)
+* 🧪 Injeção de dependência e testes por camadas
+* 💾 Integração com MongoDB via PyMongo
+* 🧰 Uso de UUID como identificador único
+* 
+---
